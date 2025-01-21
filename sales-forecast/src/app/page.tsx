@@ -20,7 +20,12 @@ export default function Home() {
   const handleForecast = async () => {
     if (data) {
       const model = await trainLinearRegressionModel(data.dates, data.sales)
-      const forecastDates = [...data.dates, ...Array(30).fill(0).map((_, i) => data.dates.length + i)]
+      const forecastDates = [
+        ...data.dates,
+        ...Array(30)
+          .fill(0)
+          .map((_, i) => `Day ${data.dates.length + i + 1}`)
+      ];      
       const forecastedSales = predictSales(model, forecastDates)
       setPredictions(forecastedSales)
     }
