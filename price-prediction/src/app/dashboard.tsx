@@ -66,7 +66,7 @@ export default function Dashboard() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="marketSentiment">Market Sentiment</Label>
-                    <Select onValueChange={(value: any) => setInputData({...inputData, marketSentiment: value})}>
+                    <Select onValueChange={(value: string) => setInputData({...inputData, marketSentiment: value})}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select market sentiment" />
                       </SelectTrigger>
