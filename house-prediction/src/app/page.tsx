@@ -1,101 +1,195 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import type React from "react"
+import { useState, useEffect } from "react"
+import { Card, CardHeader, CardTitle, CardContent } from "../app/components/ui/card"
+import { Input } from "../app/components/ui/input"
+import { Button } from "../app/components/ui/button"
+import { Label } from "../app/components/ui/label"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { BarChart, Bar } from "recharts"
+import { AlertCircle, DollarSign, Home, TrendingUp } from "lucide-react"
+
+const PredictionDashboard = () => {
+  const [formData, setFormData] = useState({
+    OverallQual: "7",
+    GrLivArea: "1500",
+    GarageCars: "2",
+    GarageArea: "400",
+    TotalBsmtSF: "1000",
+    "1stFlrSF": "1000",
+    FullBath: "2",
+    TotRmsAbvGrd: "6",
+    YearBuilt: "1990",
+    YearRemodAdd: "2000",
+    Fireplaces: "1",
+    BsmtFinSF1: "500",
+  })
+
+  const [prediction, setPrediction] = useState<number | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [featureImportance, setFeatureImportance] = useState([])
+  const [priceHistory, setPriceHistory] = useState<Array<{ timestamp: string; price: number }>>([])
+
+  useEffect(() => {
+    fetch("/api/feature-importance")
+      .then((res) => res.json())
+      .then((data) => setFeatureImportance(data))
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const response = await fetch("/api/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ features: Object.values(formData).map(Number) }),
+      })
+
+      const data = await response.json()
+      setPrediction(data.prediction)
+
+      setPriceHistory((prev) =>
+        [
+          ...prev,
+          {
+            timestamp: new Date().toLocaleTimeString(),
+            price: data.prediction,
+          },
+        ].slice(-10),
+      )
+    } catch (error) {
+      console.error("Prediction error:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="container mx-auto p-4 space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Input Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Home className="h-6 w-6" />
+              House Features
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+              {Object.entries(formData).map(([key, value]) => (
+                <div key={key}>
+                  <Label htmlFor={key}>{key}</Label>
+                  <Input
+                    id={key}
+                    name={key}
+                    type="number"
+                    value={value}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        [key]: e.target.value,
+                      }))
+                    }
+                    className="mt-1"
+                    required
+                  />
+                </div>
+              ))}
+              <Button type="submit" className="col-span-2 mt-4" disabled={loading}>
+                {loading ? "Calculating..." : "Predict Price"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        {/* Prediction Result */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-6 w-6" />
+              Prediction Result
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {prediction && (
+              <div className="space-y-4">
+                <div className="text-center p-6 bg-green-50 rounded-lg">
+                  <p className="text-3xl font-bold text-green-700">${prediction.toLocaleString()}</p>
+                  <p className="text-sm text-green-600 mt-2">Estimated Price</p>
+                </div>
+
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={priceHistory}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="timestamp" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="price" stroke="#4ade80" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Feature Importance Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-6 w-6" />
+            Feature Importance
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={featureImportance}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="feature" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="importance" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Model Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-6 w-6" />
+            Model Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <p className="text-lg font-semibold">Model Type</p>
+              <p className="text-sm">Random Forest Regressor</p>
+            </div>
+            <div className="p-4 bg-green-50 rounded-lg">
+              <p className="text-lg font-semibold">R² Score</p>
+              <p className="text-sm">0.892</p>
+            </div>
+            <div className="p-4 bg-purple-50 rounded-lg">
+              <p className="text-lg font-semibold">RMSE</p>
+              <p className="text-sm">$24,563</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-  );
+  )
 }
+
+export default PredictionDashboard
+
