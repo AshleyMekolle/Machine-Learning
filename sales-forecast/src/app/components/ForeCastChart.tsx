@@ -1,6 +1,6 @@
-'use client'
+"use client"
 
-import { Line } from 'react-chartjs-2'
+import { Line } from "react-chartjs-2"
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,18 +10,10 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartOptions
-} from 'chart.js'
+  type ChartOptions,
+} from "chart.js"
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 interface ForecastChartProps {
   dates: string[]
@@ -30,47 +22,47 @@ interface ForecastChartProps {
 }
 
 export function ForecastChart({ dates, actualSales, predictedSales }: ForecastChartProps) {
-  const options: ChartOptions<'line'> = {
+  const options: ChartOptions<"line"> = {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const,
+        position: "top" as const,
       },
       title: {
         display: true,
-        text: 'Sales Forecast',
+        text: "Sales Forecast",
       },
     },
     scales: {
       x: {
         title: {
           display: true,
-          text: 'Date'
-        }
+          text: "Date",
+        },
       },
       y: {
         title: {
           display: true,
-          text: 'Sales'
-        }
-      }
-    }
+          text: "Sales",
+        },
+      },
+    },
   }
 
   const data = {
     labels: dates,
     datasets: [
       {
-        label: 'Actual Sales',
+        label: "Actual Sales",
         data: actualSales,
-        borderColor: 'rgb(53, 162, 235)',
-        backgroundColor: 'rgba(53, 162, 235, 0.5)',
+        borderColor: "rgb(53, 162, 235)",
+        backgroundColor: "rgba(53, 162, 235, 0.5)",
       },
       {
-        label: 'Predicted Sales',
+        label: "Predicted Sales",
         data: predictedSales,
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        borderColor: "rgb(255, 99, 132)",
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
       },
     ],
   }
