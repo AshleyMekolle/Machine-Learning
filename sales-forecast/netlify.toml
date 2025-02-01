@@ -1,0 +1,7 @@
+[build]
+  command = "npm run build"
+  publish = "out"  # If you're doing a static export, otherwise remove this line
+  base = "/"  # This should be the root directory if Next.js is in the root, adjust if needed
+
+[functions]
+  directory = "netlify/functions"  # Adjust if you are using serverless functions
