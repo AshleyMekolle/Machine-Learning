@@ -1,8 +1,8 @@
-import fs from 'fs';
+import { writeFileSync } from 'fs';
 
-function generateTestData(fileName: string, trendType: string) {
+function generateTestData(fileName, trendType) {
   let data = 'Date,Sales\n';
-  const currentDate = new Date('2023-01-01');
+  let currentDate = new Date('2023-01-01');
   let sales = 1000;
 
   for (let i = 0; i < 90; i++) {
@@ -22,7 +22,7 @@ function generateTestData(fileName: string, trendType: string) {
     }
   }
 
-  fs.writeFileSync(fileName, data);
+  writeFileSync(fileName, data);
   console.log(`${fileName} has been generated.`);
 }
 
